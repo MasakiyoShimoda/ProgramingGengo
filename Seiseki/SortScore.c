@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_MEMBER 50
+#define MAX_MEMBER 51
 #define M 20
 #define N 3
 #define FILE_PASS "/Users/MasakiyoS/Desktop/ProgramingExercise/プロ言/seiseki/seiseki/seiseki.txt"
@@ -20,11 +20,15 @@ int inputMenu(FILE **fp);
 int sortMenu();
 int inputData();
 int sortData();
+int inputStudent(int, FILE **fp);
+int inputSubjectName(int, FILE **fp);
+int inputSubject (int, FILE **fp);
 
 //個人成績の構造体宣言
 typedef struct seiseki{
     int no;
     char name[M];	// Mは #defineで定義済みとする(最大20文字)
+    char examName[N][M];
     int exam[N];	// Nは #define で定義済みとする（最大10科目）
     int total;
     double ave;
@@ -40,13 +44,13 @@ int main(int argc, const char * argv[]) {
     char *test = NULL;
     char str[30];
     int number = 0, buff;
-
+    
     /*DATAファイルが有る場合は開き、ない場合は新規作成*/
     if ((fp = fopen(FILE_PASS, "r+")) == NULL) {
         fp = fopen(FILE_PASS, "w+");
     }
-    /*DATAファイルの1行目を読み、データが有るならば続きから。まだ途中*/
-    while (fgets(str, 30,fp) != NULL){
+    /*DATAファイルの1行目を読み、データが有るならば続きから。まだ途中。#s(2行目)が入力されると不具合*/
+    while (fgets(str, 20,fp) != NULL){
         test = strstr(str, "#m");
         number = atoi(&test[2]);
     }
@@ -75,7 +79,7 @@ int main(int argc, const char * argv[]) {
     }
     
     menuDisp(&fp);
-
+    
     
     fclose(fp);
     
@@ -118,7 +122,7 @@ int menuDisp(FILE **fp){
 }
 /*入力用メニュー。のちのち入力も自作関数に移行*/
 int inputMenu(FILE **fp){
-    int selectNumber, selectSubject, i;
+    int selectNumber, selectSubject;
     puts(" ");
     puts("-----成績登録メニュー-----");
     puts("生徒の人数を入力してください(最大50人)");
@@ -147,15 +151,9 @@ int inputMenu(FILE **fp){
         if (selectSubject == 0) {
             return 1;
         }else if (selectSubject < 10){
-            fprintf(*fp, "#m%d\n", selectSubject);
+            fprintf(*fp, "#s%d\n", selectSubject);
             printf("生徒数:%d人\n", selectNumber);
-            printf("科目数:%d\n", selectSubject);
-            puts("科目名を入力してください");
-            puts("0:戻る");
-            for (i = 0; i < selectSubject; i++) {
-                /*科目名を構造体に代入し、0で戻る判定*/
-                printf(">>");
-            }
+            inputSubjectName(selectSubject, fp);
         }
     }else{
         puts("異常があるの終了します");
@@ -163,6 +161,31 @@ int inputMenu(FILE **fp){
     }
     return 1;
 }
+
+int inputSubjectName(int subject, FILE **fp){
+    int i;
+    printf("科目数:%d\n", subject);
+    puts("科目名を入力してください");
+    puts("0:戻る");
+    for (i = 0; i < subject; i++) {
+        /*科目名を構造体に代入し、0で戻る判定*/
+        printf(">>");
+        scanf("%s", data[0].examName[i]);
+        fprintf(*fp, "#e%d%s\n", i+1, data[0].examName[i]);
+    }
+    return 1;
+}
+
+int inputSubject(int subject, FILE **fp){
+    
+    return 1;
+}
+
+int inputStudent(int sutudent, FILE **fp){
+    
+    return 1;
+}
+
 /*ソートメニュー。まだ手を付けれず*/
 int sortMenu(){
     int select;
