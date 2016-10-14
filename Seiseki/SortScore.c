@@ -13,7 +13,7 @@
 #define MAX_MEMBER 51
 #define M 20
 #define N 3
-#define FILE_PASS "/Users/MasakiyoS/Desktop/ProgramingExercise/プロ言/seiseki/seiseki/seiseki.txt"
+//#define FILE_PASS "/Users/MasakiyoS/Desktop/ProgramingExercise/プロ言/seiseki/seiseki/seiseki.txt"
 
 int menuDisp(FILE **fp);
 int inputMenu(FILE **fp);
