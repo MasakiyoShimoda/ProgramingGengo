@@ -4,7 +4,6 @@
 //
 //  Created by 下田将斉 on 2016/10/03.
 //  Copyright © 2016年 Masakiyo Shimoda. All rights reserved.
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,207 +11,184 @@
 
 #define MAX_MEMBER 51
 #define M 20
-#define N 3
-//#define FILE_PASS "/Users/MasakiyoS/Desktop/ProgramingExercise/プロ言/seiseki/seiseki/seiseki.txt"
+#define N 10
 
-int menuDisp(FILE **fp);
-int inputMenu(FILE **fp);
-int sortMenu();
+int reSelect(int, int);
+void menuDisp();
+void inputMenu();
+void sortMenu();
 int inputData();
 int sortData();
-int inputStudent(int, FILE **fp);
-int inputSubjectName(int, FILE **fp);
-int inputSubject (int, FILE **fp);
+void inputSeiseki(int, int);
 
-//個人成績の構造体宣言
 typedef struct seiseki{
-    int no;
     char name[M];	// Mは #defineで定義済みとする(最大20文字)
-    char examName[N][M];
-    int exam[N];	// Nは #define で定義済みとする（最大10科目）
-    int total;
+    int member, no, exam[N], total;	// Nは #define で定義済みとする（最大10科目）
     double ave;
 } Seiseki;
 
 Seiseki data[MAX_MEMBER]; //MAX_MEMBERは#defineで定義済み(最大50名)
 
-
-
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    FILE *fp;
-    char *test = NULL;
-    char str[30];
-    int number = 0, buff;
-    
-    /*DATAファイルが有る場合は開き、ない場合は新規作成*/
-    if ((fp = fopen(FILE_PASS, "r+")) == NULL) {
-        fp = fopen(FILE_PASS, "w+");
-    }
-    /*DATAファイルの1行目を読み、データが有るならば続きから。まだ途中。#s(2行目)が入力されると不具合*/
-    while (fgets(str, 20,fp) != NULL){
-        test = strstr(str, "#m");
-        number = atoi(&test[2]);
-    }
-    if(number < 50 && number > 1){
-        printf("入力途中のデータが有りますが、続きから再開しますか？\n1:yes\n0:no\n>>");
-        scanf("%d", &buff);
-        while(0 > buff || buff > 1){
-            puts("もう1度選択してください");
-            printf(">>");
-            scanf("%d", &buff);
-        }
-        switch (buff) {
-            case 1:
-                printf("生徒数%d", number);
-                
-                break;
-            case 0:
-                fp = fopen(FILE_PASS, "w+");
-                menuDisp(&fp);
-                break;
-            default:
-                puts("異常があるの終了します");
-                exit(1);
-                break;
-        }
-    }
-    
-    menuDisp(&fp);
-    
-    
-    fclose(fp);
-    
+    menuDisp();
     return 0;
 }
-/*メインメニューまだ改造予定*/
-int menuDisp(FILE **fp){
-    int select;
-    puts(" ");
-    puts("*------------------------*");
-    puts("成績処理プログラム");
+
+/*メインメニュー*/
+void menuDisp(){
+    puts("*------------成績処理プログラム------------*");
     puts("1:成績登録");
     puts("2:データ整理");
     puts("0:終了");
-    puts("*------------------------*");
-    printf(">>");
-    scanf("%d", &select);
-    while(0 > select || select > 2){
-        puts("もう1度選択してください");
-        printf(">>");
-        scanf("%d", &select);
-    }
-    switch (select) {
+    puts("*-----------------------------------------*");
+    
+    switch (reSelect(0, 2)) {
         case 1:
-            while(inputMenu(fp) == 1)
-                menuDisp(fp);
+            inputMenu();
             break;
         case 2:
-            while (sortMenu() == 1)
-                menuDisp(fp);
+            sortMenu();
+            break;
         case 0:
             puts("終了します。");
             exit(0);
         default:
             puts("異常があるの終了します");
-            exit(1);
-            break;
+            exit(9);
     }
-    return 0;
 }
-/*入力用メニュー。のちのち入力も自作関数に移行*/
-int inputMenu(FILE **fp){
-    int selectNumber, selectSubject;
-    puts(" ");
-    puts("-----成績登録メニュー-----");
-    puts("生徒の人数を入力してください(最大50人)");
-    puts("0:戻る");
+
+/*異常な値が入力されたら再入力を求める*/
+int reSelect(int min, int max){
+    int selectNumber;
     printf(">>");
     scanf("%d", &selectNumber);
-    while(0 > selectNumber || selectNumber > 50){
+    while(min > selectNumber || selectNumber > max){
         puts("もう1度選択してください");
         printf(">>");
         scanf("%d", &selectNumber);
     }
-    if(selectNumber == 0){
-        return 1;
-    }else if(selectNumber < 50){
-        fprintf(*fp, "#m%d\n", selectNumber);
-        printf("生徒数:%d人\n", selectNumber);
-        puts("科目数を入力してください(最大10科目)");
-        puts("0:戻る");
-        printf(">>");
-        scanf("%d", &selectSubject);
-        while (0 > selectSubject || selectSubject > 10) {
-            puts("もう1度入力してください");
-            printf(">>");
-            scanf("%d", &selectSubject);
-        }
-        if (selectSubject == 0) {
-            return 1;
-        }else if (selectSubject < 10){
-            fprintf(*fp, "#s%d\n", selectSubject);
-            printf("生徒数:%d人\n", selectNumber);
-            inputSubjectName(selectSubject, fp);
-        }
+    return selectNumber;
+}
+
+/*生徒の人数と科目数を入力させて構造体に代入する*/
+void inputMenu(){
+    int selectNumber, selectSubject;
+    puts("\n-----成績登録メニュー-----");
+    puts("生徒の人数を入力してください(最大50人)\n0:戻る");
+    selectNumber = data[0].member = reSelect(0, MAX_MEMBER);
+    
+    if(selectNumber == 0)
+        menuDisp();
+    else if(selectNumber < 50){
+        puts("科目数を入力してください(最大10科目)\n0:戻る");
+        selectSubject = reSelect(0, N);
+        
+        if (selectSubject == 0)
+            menuDisp();
+        else if (selectSubject < N)
+            inputSeiseki(selectSubject, selectNumber);
     }else{
         puts("異常があるの終了します");
-        exit(1);
+        exit(9);
     }
-    return 1;
 }
 
-int inputSubjectName(int subject, FILE **fp){
-    int i;
-    printf("科目数:%d\n", subject);
-    puts("科目名を入力してください");
-    puts("0:戻る");
-    for (i = 0; i < subject; i++) {
-        /*科目名を構造体に代入し、0で戻る判定*/
-        printf(">>");
-        scanf("%s", data[0].examName[i]);
-        fprintf(*fp, "#e%d%s\n", i+1, data[0].examName[i]);
+/*生徒の人数と科目数から点数を入力し、構造体に代入*/
+void inputSeiseki(int subject, int number){
+    int i, j;
+    
+    for (i = 1; i <= number; i++) {
+        data[i].no = i;
+        printf("-----------%d人目------------\n", i);
+        printf("名前>>");
+        getchar();
+        fgets(data[i].name, M, stdin);
+        
+        for (j = 1; j <= subject; j++){
+            printf("科目%d>>",j);
+            scanf("%d", &data[i].exam[j]);
+        }
     }
-    return 1;
-}
-
-int inputSubject(int subject, FILE **fp){
+    puts("登録を終了します");
     
-    return 1;
-}
-
-int inputStudent(int sutudent, FILE **fp){
+    /*合計点と平均点を構造体に代入*/
+    for (i = 0; i < number; i++) {
+        for (j = 0; j < subject; j++)
+            data[i].total += data[i].exam[j];
+        data[i].ave = data[i].total / subject;
+    }
     
-    return 1;
+    menuDisp();
 }
 
-/*ソートメニュー。まだ手を付けれず*/
-int sortMenu(){
-    int select;
+/*ソートメニュー*/
+void sortMenu(){
+    int i, j, min, tmp;
     puts(" ");
     puts("-----データ整理メニュー-----");
+    puts("1:出席番号順");
+    puts("2:名前順");
+    puts("3:指定した科目の成績順");
+    puts("4:平均順");
+    puts("5:総点順");
     puts("0:戻る");
-    printf(">>");
-    scanf("%d", &select);
-    while(0 > select || select > 2){
-        puts("もう1度選択してください");
-        printf(">>");
-        scanf("%d", &select);
-    }
-    switch (select) {
-        case 1:
-            
+    switch (reSelect(0, 4)) {
+        case 1:/*出席番号順*/
+            for (i = 0; i < data[0].no; i++) {
+                min = i;
+                for (j = i+1; j < data[0].no; j++)
+                    if (data[j].no < data[min].no)
+                        min = j;
+                tmp = data[i].no;
+                data[i].no = data[j].no;
+                data[j].no = tmp;
+            }
             break;
-        case 2:
-            
+        case 2:/*名前順は未実装*/
+            break;
+        case 3:/*各科目点数順*/
+            for (i = 0; i < data[0].exam[0]; i++) {
+                min = i;
+                for (j = i+1; j < data[0].exam[0]; j++)
+                    if (data[j].exam[0] < data[min].exam[0])
+                        min = j;
+                tmp = data[i].exam[0];
+                data[i].exam[0] = data[j].exam[0];
+                data[j].exam[0] = tmp;
+            }
+            break;
+        case 4:/*平均点順*/
+            for (i = 0; i < data[0].ave; i++) {
+                min = i;
+                for (j = i+1; j < data[0].ave; j++)
+                    if (data[j].ave < data[min].ave)
+                        min = j;
+                tmp = data[i].ave;
+                data[i].ave = data[j].ave;
+                data[j].ave = tmp;
+            }
+            break;
+        case 5:/*合計点順*/
+            for (i = 0; i < data[0].total; i++) {
+                min = i;
+                for (j = i+1; j < data[0].total; j++)
+                    if (data[j].total < data[min].total)
+                        min = j;
+                tmp = data[i].total;
+                data[i].total = data[j].total;
+                data[j].total = tmp;
+            }
             break;
         case 0:
-            return 1;
-            break;
+            menuDisp();
         default:
             puts("異常があるの終了します");
-            exit(1);
-            break;
+            exit(9);
     }
-    return 10;
+    
+    menuDisp();
 }
+
+
+
