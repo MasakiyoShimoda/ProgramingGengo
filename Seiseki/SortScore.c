@@ -20,11 +20,12 @@ void sortMenu();
 int inputData();
 int sortData();
 void inputSeiseki(int, int);
+void show();
 
 typedef struct seiseki{
     char name[M];	// Mは #defineで定義済みとする(最大20文字)
-    int member, no, exam[N], total;	// Nは #define で定義済みとする（最大10科目）
-    double ave;
+    int member, no, exam[N], number, exam0;	// Nは #define で定義済みとする（最大10科目）
+    double ave, total;
 } Seiseki;
 
 Seiseki data[MAX_MEMBER]; //MAX_MEMBERは#defineで定義済み(最大50名)
@@ -76,13 +77,12 @@ void inputMenu(){
     int selectNumber, selectSubject;
     puts("\n-----成績登録メニュー-----");
     puts("生徒の人数を入力してください(最大50人)\n0:戻る");
-    selectNumber = data[0].member = reSelect(0, MAX_MEMBER);
-    
+    selectNumber = data[0].number = reSelect(0, MAX_MEMBER);
     if(selectNumber == 0)
         menuDisp();
     else if(selectNumber < 50){
         puts("科目数を入力してください(最大10科目)\n0:戻る");
-        selectSubject = reSelect(0, N);
+        selectSubject = data[0].exam0 = reSelect(0, N);
         
         if (selectSubject == 0)
             menuDisp();
@@ -100,7 +100,7 @@ void inputSeiseki(int subject, int number){
     
     for (i = 1; i <= number; i++) {
         data[i].no = i;
-        printf("-----------%d人目------------\n", i);
+        printf("-----------%d人目------------\n", data[i].no);
         printf("名前>>");
         getchar();
         fgets(data[i].name, M, stdin);
@@ -108,17 +108,11 @@ void inputSeiseki(int subject, int number){
         for (j = 1; j <= subject; j++){
             printf("科目%d>>",j);
             scanf("%d", &data[i].exam[j]);
-        }
-    }
-    puts("登録を終了します");
-    
-    /*合計点と平均点を構造体に代入*/
-    for (i = 0; i < number; i++) {
-        for (j = 0; j < subject; j++)
             data[i].total += data[i].exam[j];
+        }
         data[i].ave = data[i].total / subject;
     }
-    
+    puts("登録を終了します");
     menuDisp();
 }
 
@@ -133,17 +127,19 @@ void sortMenu(){
     puts("4:平均順");
     puts("5:総点順");
     puts("0:戻る");
-    switch (reSelect(0, 4)) {
+    switch (reSelect(0, 5)) {
         case 1:/*出席番号順*/
-            for (i = 0; i < data[0].no; i++) {
+            for (i = 1; i < data[0].number; i++) {
                 min = i;
-                for (j = i+1; j < data[0].no; j++)
-                    if (data[j].no < data[min].no)
+                for (j = i+1; j < data[0].number; j++)
+                    if (data[j].no < data[min].no){
                         min = j;
-                tmp = data[i].no;
-                data[i].no = data[j].no;
-                data[j].no = tmp;
+                        tmp = data[i].no;
+                        data[i].no = data[j].no;
+                        data[j].no = tmp;
+                    }
             }
+            
             break;
         case 2:/*名前順は未実装*/
             break;
@@ -151,33 +147,36 @@ void sortMenu(){
             for (i = 0; i < data[0].exam[0]; i++) {
                 min = i;
                 for (j = i+1; j < data[0].exam[0]; j++)
-                    if (data[j].exam[0] < data[min].exam[0])
+                    if (data[j].exam[0] < data[min].exam[0]){
                         min = j;
-                tmp = data[i].exam[0];
-                data[i].exam[0] = data[j].exam[0];
-                data[j].exam[0] = tmp;
+                        tmp = data[i].exam[0];
+                        data[i].exam[0] = data[j].exam[0];
+                        data[j].exam[0] = tmp;
+                    }
             }
             break;
         case 4:/*平均点順*/
-            for (i = 0; i < data[0].ave; i++) {
+            for (i = 0; i < data[0].number; i++) {
                 min = i;
-                for (j = i+1; j < data[0].ave; j++)
-                    if (data[j].ave < data[min].ave)
+                for (j = i+1; j < data[0].number; j++)
+                    if (data[j].ave < data[min].ave){
                         min = j;
-                tmp = data[i].ave;
-                data[i].ave = data[j].ave;
-                data[j].ave = tmp;
+                        tmp = data[i].ave;
+                        data[i].ave = data[j].ave;
+                        data[j].ave = tmp;
+                    }
             }
             break;
         case 5:/*合計点順*/
-            for (i = 0; i < data[0].total; i++) {
+            for (i = 0; i < data[0].number; i++) {
                 min = i;
-                for (j = i+1; j < data[0].total; j++)
-                    if (data[j].total < data[min].total)
+                for (j = i+1; j < data[0].number; j++)
+                    if (data[j].total < data[min].total){
                         min = j;
-                tmp = data[i].total;
-                data[i].total = data[j].total;
-                data[j].total = tmp;
+                        tmp = data[i+1].total;
+                        data[i+1].total = data[j].total;
+                        data[j+1].total = tmp;
+                    }
             }
             break;
         case 0:
@@ -186,9 +185,17 @@ void sortMenu(){
             puts("異常があるの終了します");
             exit(9);
     }
-    
+    show();
     menuDisp();
 }
 
-
-
+/*ソート結果を表示*/
+void show(){
+    int i, j;
+    for (i = 0; i < data[0].number; i++) {
+        printf("%d\t", data[i+1].no);
+        for (j = 0; j < data[0].exam0; j++)
+            printf("%d\t", data[i+1].exam[j+1]);
+        printf("%.2f\t%.2f\n", data[i+1].total, data[i+1].ave);
+    }
+}
